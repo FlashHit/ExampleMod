@@ -1,0 +1,14 @@
+{
+	"Name": "ExampleMod",
+	"Authors": ["Flash_Hit"],
+	"Description": "ExampleMod.",
+	"URL": "none",
+	"Version": "1.0.0",
+	"HasWebUI": false,
+	"HasVeniceEXT": true,
+	"Tags": [],
+	"RequiredXPacks": [],
+	"Dependencies": {
+		"veniceext": ">=1.0.0"
+	}
+}
