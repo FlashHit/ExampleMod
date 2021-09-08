@@ -5,6 +5,8 @@ class 'SharedExampleMod'
 -- as they are required for other files as well we want to require the configs first
 -- debugconfig is for things like enable/ disable logger etc.
 require "__shared/Config/DebugConfig"
+-- MapsConfig has stuff like bundles, superbundles etc.
+require "__shared/Config/MapsConfig"
 
 -- this table returns all SupportedMaps (not really huge)
 require "__shared/SupportedMaps"
@@ -26,6 +28,8 @@ require "__shared/Utils/DataContainer"
 -- logic stuff
 -- RegistryManager, instead of creating multiple registries we create only one registry
 local m_RegistryManager = require "__shared/Logic/RegistryManager"
+-- BundleManager will add the needed (super-)bundles & block terrains etc.
+local m_BundleManager = require "__shared/Logic/BundleManager"
 
 -- we do all modifications in there. at this point we could do it in here, but who know how much stuff we will add
 -- and I don't want this to become messy af
@@ -47,6 +51,7 @@ function SharedExampleMod:OnExtensionLoaded()
 
 	-- as we said: this is our real init, so we reroute this event to all files, if needed
 	m_RegistryManager:OnExtensionLoaded()
+	m_BundleManager:OnExtensionLoaded()
 
 	if self:GetIsHotReload() then
 		self:OnHotReload()
@@ -64,7 +69,9 @@ end
 function SharedExampleMod:InstallHooks()
 	-- use a table so we are able to uninstall these hooks
 	self.m_Hooks = {
-		Hooks:Install('ResourceManager:LoadBundles', 1, self, self.OnResourceManagerLoadBundles)
+		Hooks:Install('ResourceManager:LoadBundles', 1, self, self.OnResourceManagerLoadBundles),
+		Hooks:Install('Terrain:Load', 1, self, self.OnTerrainLoad),
+		Hooks:Install('VisualTerrain:Load', 1, self, self.OnTerrainLoad)
 	}
 end
 
@@ -112,6 +119,10 @@ end
 -- =============================================
 
 function SharedExampleMod:OnLevelLoadResources(p_LevelName, p_GameMode, p_IsDedicatedServer)
+	-- we need to call this always to update the level name
+	-- this won't do anything on unsupported maps besides that
+	m_BundleManager:OnLevelLoadResources(p_LevelName, p_GameMode, p_IsDedicatedServer)
+
 	-- check if this map is supported
 	-- example of how the map names work:
 	-- p_LevelName:gsub(".*/", "") .. "_" .. p_GameMode => "MP_001_ConquestSmall0"
@@ -161,7 +172,13 @@ function SharedExampleMod:OnResourceManagerLoadBundles(p_HookCtx, p_Bundles, p_C
 		m_Logger:Write(l_Index .. ": " .. p_Bundles[l_Index])
 	end
 
-	-- call something like a BundleManager
+	-- adding relevant bundles in the BundleManager if needed
+	m_BundleManager:OnResourceManagerLoadBundles(p_HookCtx, p_Bundles, p_Compartment)
+end
+
+function SharedExampleMod:OnTerrainLoad(p_HookCtx, p_AssetName)
+	-- block terrains from injected bundles in the bundlemanager
+	m_BundleManager:OnTerrainLoad(p_HookCtx, p_AssetName)
 end
 
 -- =============================================
