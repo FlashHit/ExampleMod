@@ -33,7 +33,7 @@ function BundleManager:OnLevelLoadResources(p_LevelName, p_GameMode, p_IsDedicat
 	end
 end
 
-function BundleManager:OnResourceManagerLoadBundles	(p_HookCtx, p_Bundles, p_Compartment)
+function BundleManager:OnResourceManagerLoadBundles(p_HookCtx, p_Bundles, p_Compartment)
 	local s_LevelName = SharedUtils:GetLevelName()
 
 	-- check if this is the main level bundle & if no other bundles are injected already
